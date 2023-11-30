@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  # worker:
+  #   image: node:18-alpine
+  #   container_name: worker
+  #   ports:
+  #     - 8183:3000
+
+  api:
+    image: node:18-alpine
+    container_name: api
+    ports:
+      - 8181:3000
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - app_network
+
+  db:
+    container_name: db
+    image: postgres:latest
+    ports:
+      - 8182:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: p123456
+      POSTGRES_DB: default_database
+    volumes:
+      - ./db-data/:/var/lib/postgresql/data/
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
