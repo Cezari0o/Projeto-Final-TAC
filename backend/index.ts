@@ -2,8 +2,10 @@ import express, { Application } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import { StatusCodes } from "http-status-codes";
+import wakeWorker from "./src/controllers/workerController";
 
 dotenv.config();
+wakeWorker();
 
 const app: Application = express();
 
