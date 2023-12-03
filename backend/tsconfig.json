@@ -104,7 +104,8 @@
     "prisma"
   ],
   "include": [
-    "./**/*"
+    "./**/*",
+    "./**/*.d.ts"
   ],
   "ts-node": {
     "swc": true

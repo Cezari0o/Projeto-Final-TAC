@@ -1,11 +1,23 @@
+import DataProcess from "../../repos/implementation/dataProcess";
 import WorkerSchedule from "../../repos/implementation/workerSchedule";
+import DataProcessService from "../../services/DataProcessService";
+import FetchWorker from "../../services/FetchWorker";
 import { WakeWorkerService } from "../../services/WakeWorkerService";
 
 export default function wakeWorker() {
-  const scheduler = new WorkerSchedule();
-  const workerService = new WakeWorkerService(scheduler);
+  const schedulerRepo = new WorkerSchedule();
+  const dataProcessRepo = new DataProcess();
+  const dataProcessService = new DataProcessService(dataProcessRepo);
+  const worker = new FetchWorker(
+    [(data) => dataProcessService.enderecoPacienteEstadoDataProcess(data)],
+    () => dataProcessService.saveToDataBase()
+  );
 
-  workerService.wakeUpWorker((err) => {
+  const wakeUpWorkerService = new WakeWorkerService(schedulerRepo, () => {
+    worker.startAndGetStatus();
+  });
+
+  wakeUpWorkerService.wakeUpWorker((err) => {
     if (err) {
       console.log(
         "Nao foi possivel agendar o worker:",
@@ -15,7 +27,7 @@ export default function wakeWorker() {
       return;
     }
 
-    scheduler.getWorkerNextExec().then((execution) => {
+    schedulerRepo.getWorkerNextExec().then((execution) => {
       console.log("Worker agendado! Proxima atualizacao:", execution);
     });
   });

@@ -4,16 +4,17 @@ import Callback from "../../util/callbackType";
 import { scheduleJob } from "node-schedule";
 
 export class WakeWorkerService {
-  private workerApi;
-  constructor(private schedulerRepo: WorkerScheduleRepo) {
-    this.workerApi = axios.create({
-      baseURL: process.env.WORKER_URL,
-    });
+  private wakeUpMethod;
+  constructor(
+    private schedulerRepo: WorkerScheduleRepo,
+    wakeUpMethod: () => void
+  ) {
+    this.wakeUpMethod = wakeUpMethod;
   }
 
   private async wakeUp() {
-    // const response = this.workerApi.post<{}>("");
-
+    console.log();
+    this.wakeUpMethod();
     return "Worker active";
   }
 

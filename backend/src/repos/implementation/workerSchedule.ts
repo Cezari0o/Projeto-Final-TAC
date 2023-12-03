@@ -3,24 +3,28 @@ import WorkerScheduleRepo from "../workerScheduleRepo";
 
 export default class WorkerSchedule implements WorkerScheduleRepo {
   getWorkerNextExec = async () => {
-    const schedules = await prisma.workerScheduler.findMany();
+    try {
+      const schedules = await prisma.workerScheduler.findMany();
 
-    let nextExec: (typeof schedules)[0] | null = null;
+      let nextExec: (typeof schedules)[0] | null = null;
 
-    schedules.forEach((schedule) => {
+      schedules.forEach((schedule) => {
+        if (!nextExec) {
+          nextExec = schedule;
+          return;
+        }
+
+        nextExec = nextExec.id < schedule.id ? schedule : nextExec;
+      });
+
       if (!nextExec) {
-        nextExec = schedule;
-        return;
+        throw new Error("No schedule found!");
       }
 
-      nextExec = nextExec.id < schedule.id ? schedule : nextExec;
-    });
-
-    if (!nextExec) {
-      throw new Error("Nothing schedule found!");
+      return (nextExec as any).nextFetch as Date;
+    } catch (err) {
+      return new Date();
     }
-
-    return (nextExec as any).nextFetch as Date;
   };
 
   setWorkerNextExec = async (when: Date) => {
