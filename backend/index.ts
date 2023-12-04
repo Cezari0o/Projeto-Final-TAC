@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { StatusCodes } from "http-status-codes";
 import wakeWorker from "./src/controllers/workerController";
+import router from "./src/routes";
 
 dotenv.config();
 wakeWorker();
@@ -25,12 +26,9 @@ const errorHandler: express.ErrorRequestHandler = (err, req, res, next) => {
   next();
 };
 
-app.get("", (req, res) => {
-  res.send("Olá mundo!");
-});
-
 app.use(express.json());
 app.use(errorHandler);
+app.use(router);
 app.listen(port, () => {
   console.log(`Servidor rodando na porta ${port}.`);
 });

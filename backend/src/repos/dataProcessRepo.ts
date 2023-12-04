@@ -1,4 +1,4 @@
-export const countProps = [
+export const countProps = [ // Propriedades calculadas por vacina
   "pacienteEstado",
   "vacinaNome",
   "pacienteIdade",

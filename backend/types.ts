@@ -50,6 +50,13 @@ export interface VacinaData {
   };
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // {
 //   "_index": "desc-imunizacao-v5",
 //   "_type": "_doc",

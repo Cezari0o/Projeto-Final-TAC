@@ -47,15 +47,16 @@ export default class FetchWorker {
 
     console.log(
       `\n--${
-        final ? "-Final Status-" : " Fetch Status"
-      } --\nTime: ${new Date().toISOString()}\n`,
+        final ? "- Final Status -" : " Fetch Status "
+      }--\nTime: ${new Date().toISOString()}\n`,
       formattedString,
       (this.maxRequestCount &&
         `\nMax Request Count: ${this.maxRequestCount}`) ||
         "",
       (final &&
         `\nInitial time ${this.initialFetchTime?.toLocaleString()} / Final Fetch Time: ${new Date().toLocaleString()}`) ||
-        ""
+        "",
+      "\n"
     );
   }
 
