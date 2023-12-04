@@ -19,8 +19,8 @@ export default class DataProcess implements DataProcessRepo {
     console.log("Contagem de vacinacao por estado", this.estadoPacienteCount);
   };
 
-  saveTempEstadoPaciente = (endereco: string) => {
-    const address = String(endereco);
+  setEstadoPaciente = (estadoNome: string) => {
+    const address = String(estadoNome);
     if (hasKey(this.estadoPacienteCount, address)) {
       this.estadoPacienteCount[address] += 1;
     } else {
@@ -34,7 +34,7 @@ export default class DataProcess implements DataProcessRepo {
     // }
   };
 
-  saveEstadoPaciente = async () => {
+  saveAll = async () => {
     console.log("Salvando vacinacao por estado...");
     try {
       for (const estado in this.estadoPacienteCount) {

@@ -11,13 +11,13 @@ export default class DataProcessService {
 
   enderecoPacienteEstadoDataProcess(data: VacinaData[]) {
     for (const key in data) {
-      this.dataProcessRepo.saveTempEstadoPaciente(
+      this.dataProcessRepo.setEstadoPaciente(
         data[key]._source.paciente_endereco_uf
       );
     }
   }
 
   saveToDataBase() {
-    this.dataProcessRepo.saveEstadoPaciente();
+    this.dataProcessRepo.saveAll();
   }
 }

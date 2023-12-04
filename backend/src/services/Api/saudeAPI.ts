@@ -31,12 +31,14 @@ export default class SaudeAPI {
 
     const vacinasList: VacinaData[] = response.data["hits"]["hits"];
 
+    console.log("coe", response.headers);
+
     return {
       data: vacinasList,
       scrollID: nextScrollID,
       empty: vacinasList.length === 0,
-      responseSize: response.headers["Content-Length"]
-        ? Number(response.headers["Content-Length"])
+      responseSize: response.headers["content-length"]
+        ? Number(response.headers["content-length"])
         : 0,
     };
   }
@@ -50,12 +52,14 @@ export default class SaudeAPI {
 
     const vacinasList: VacinaData[] = response.data["hits"]["hits"];
 
+    console.log(`coe`, response.headers, response.headers.hasContentLength);
+
     return {
       data: vacinasList,
       scrollID: nextScrollID,
       empty: vacinasList.length === 0,
-      responseSize: response.headers["Content-Length"]
-        ? Number(response.headers["Content-Length"])
+      responseSize: response.headers["content-length"]
+        ? Number(response.headers["content-length"])
         : 0,
     };
   }

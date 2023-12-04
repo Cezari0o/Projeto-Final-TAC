@@ -1,5 +1,6 @@
 import SaudeAPI from "../Api/saudeAPI";
 import { VacinaData } from "../../../types";
+import formatBytes from "../../util/formatBytes";
 
 export default class FetchWorker {
   private saudeAPIService;
@@ -35,7 +36,13 @@ export default class FetchWorker {
 
   private printStatus() {
     const formattedString = Object.entries(this.netStatusData)
-      .map(([key, value]) => `${key}: ${value}`)
+      .map(([key, value]) => {
+        if (key === "requestTotalSize") {
+          return `${key}: ${formatBytes(value)}`;
+        }
+        return `${key}: ${value}`;
+      })
+
       .join("\n");
 
     console.log(
@@ -106,7 +113,7 @@ export default class FetchWorker {
         }
 
         this.netStatusData.requestCount++;
-        this.netStatusData.requestTotalSize += 0;
+        this.netStatusData.requestTotalSize += response.responseSize;
         this.servicesList.forEach((service) => service(response.data));
         this.nextScrollID = response.scrollID;
         this.netStatusData.totalItensCount += response.data.length;
