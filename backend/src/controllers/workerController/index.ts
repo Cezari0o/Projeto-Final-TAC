@@ -9,7 +9,7 @@ export default function wakeWorker() {
   const dataProcessRepo = new DataProcess();
   const dataProcessService = new DataProcessService(dataProcessRepo);
   const worker = new FetchWorker(
-    [(data) => dataProcessService.enderecoPacienteEstadoDataProcess(data)],
+    [(data) => dataProcessService.processDataCount(data)],
     () => dataProcessService.saveToDataBase()
   );
 

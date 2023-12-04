@@ -14,6 +14,9 @@
     "unb",
     "tac"
   ],
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "author": "Gabriel Cesário",
   "license": "ISC",
   "dependencies": {

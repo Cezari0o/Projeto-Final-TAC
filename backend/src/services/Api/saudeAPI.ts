@@ -31,8 +31,6 @@ export default class SaudeAPI {
 
     const vacinasList: VacinaData[] = response.data["hits"]["hits"];
 
-    console.log("coe", response.headers);
-
     return {
       data: vacinasList,
       scrollID: nextScrollID,
@@ -51,8 +49,6 @@ export default class SaudeAPI {
     const nextScrollID = response.data["_scroll_id"] as string;
 
     const vacinasList: VacinaData[] = response.data["hits"]["hits"];
-
-    console.log(`coe`, response.headers, response.headers.hasContentLength);
 
     return {
       data: vacinasList,

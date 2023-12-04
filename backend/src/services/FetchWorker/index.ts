@@ -11,6 +11,7 @@ export default class FetchWorker {
   private nextScrollID: string | null = null;
   private onFinishFetch;
   private servicesList;
+  private initialFetchTime: Date | null = null;
 
   private netStatusData = {
     requestCount: 0,
@@ -34,7 +35,7 @@ export default class FetchWorker {
     this.servicesList = servicesList;
   }
 
-  private printStatus() {
+  private printStatus(final = false) {
     const formattedString = Object.entries(this.netStatusData)
       .map(([key, value]) => {
         if (key === "requestTotalSize") {
@@ -42,13 +43,18 @@ export default class FetchWorker {
         }
         return `${key}: ${value}`;
       })
-
       .join("\n");
 
     console.log(
-      `\n-- Fetch Status --\nTime: ${new Date().toISOString()}\n`,
+      `\n--${
+        final ? "-Final Status-" : " Fetch Status"
+      } --\nTime: ${new Date().toISOString()}\n`,
       formattedString,
-      (this.maxRequestCount && `Max Request Count: ${this.maxRequestCount}`) ||
+      (this.maxRequestCount &&
+        `\nMax Request Count: ${this.maxRequestCount}`) ||
+        "",
+      (final &&
+        `\nInitial time ${this.initialFetchTime?.toLocaleString()} / Final Fetch Time: ${new Date().toLocaleString()}`) ||
         ""
     );
   }
@@ -58,6 +64,7 @@ export default class FetchWorker {
       return this.netStatusData;
     }
 
+    this.initialFetchTime = new Date();
     this.fetchData();
     return this.netStatusData;
   }
@@ -120,7 +127,7 @@ export default class FetchWorker {
 
         this.printStatus();
         if (this.finishedFetch()) {
-          console.log("Finishing data fetch.");
+          this.printStatus(true);
           this.onFinishFetch();
           return;
         }

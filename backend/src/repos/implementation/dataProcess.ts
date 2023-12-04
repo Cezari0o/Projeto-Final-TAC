@@ -1,9 +1,15 @@
 import hasKey from "../../util/hasKey";
-import DataProcessRepo from "../dataProcessRepo";
+import DataProcessRepo, {
+  CategoriaCountType,
+  countProps,
+} from "../dataProcessRepo";
 import prisma from "../prisma";
 
 export default class DataProcess implements DataProcessRepo {
-  private estadoPacienteCount: { [estado: string]: number } = {};
+  private countState: {
+    [key in CategoriaCountType]: { [key: string]: number };
+  } = {} as never;
+
   private requestSaveCount = 0;
   private requestSaveMaxCount;
 
@@ -12,50 +18,84 @@ export default class DataProcess implements DataProcessRepo {
       ? Number(process.env.REQUEST_SAVE_COUNT)
       : 10;
   }
-  getEstadoPacienteCount = () => this.estadoPacienteCount;
+
+  private verifyKeyType(key: CategoriaCountType): key is CategoriaCountType {
+    if (!countProps.includes(key)) {
+      throw new Error(`${key} of different type!`);
+    }
+
+    return true;
+  }
+
+  async setState(categoria: CategoriaCountType, item: string) {
+    this.verifyKeyType(categoria);
+
+    if(!item || ['None', 'null', '-1', ''].includes(item)) {
+      item = 'Não informado';
+    }
+
+    item = String(item);
+
+    if (!hasKey(this.countState, categoria)) {
+      this.countState[categoria as CategoriaCountType] = {};
+    }
+
+    if (hasKey(this.countState[categoria], item)) {
+      this.countState[categoria][item] += 1;
+    } else {
+      this.countState[categoria][item] = 1;
+    }
+  }
+
+  async getState(categoria: CategoriaCountType) {
+    this.verifyKeyType(categoria);
+
+    return this.countState[categoria];
+  }
 
   printDataStatus = () => {
     console.log("Data Temporary Status");
-    console.log("Contagem de vacinacao por estado", this.estadoPacienteCount);
-  };
-
-  setEstadoPaciente = (estadoNome: string) => {
-    const address = String(estadoNome);
-    if (hasKey(this.estadoPacienteCount, address)) {
-      this.estadoPacienteCount[address] += 1;
-    } else {
-      this.estadoPacienteCount[address] = 1;
-    }
-
-    // this.requestSaveCount++;
-    // if (this.requestSaveCount >= this.requestSaveMaxCount) {
-    //   this.printDataStatus();
-    //   this.requestSaveCount = 0;
-    // }
+    console.log(this.countState);
   };
 
   saveAll = async () => {
-    console.log("Salvando vacinacao por estado...");
+    console.log("Saving to db...");
     try {
-      for (const estado in this.estadoPacienteCount) {
-        await prisma.estadoPacienteCount.upsert({
-          create: {
-            estado: estado,
-            count: this.estadoPacienteCount[estado],
-          },
-          update: {
-            count: this.estadoPacienteCount[estado],
-          },
-          where: {
-            estado: estado,
-          },
-        });
+      const categorys = await prisma.categoryCount.findMany();
+
+      for (const [category, countPerCategoryObj] of Object.entries(
+        this.countState
+      )) {
+        const myCategory = categorys.find((cat) => cat.name === category);
+        console.log(`Saving ${category}`);
+
+        if (!myCategory) {
+          throw new Error(
+            "Category not found in database. Run the seed script and try again!"
+          );
+        }
+
+        for (const [itemName, total] of Object.entries(countPerCategoryObj)) {
+          await prisma.dataCount.upsert({
+            create: {
+              itemCategoryId: myCategory.id,
+              itemName: itemName,
+              total: total,
+            },
+            update: {
+              total: total,
+            },
+            where: {
+              itemName: itemName,
+            },
+          });
+        }
       }
 
-      console.log("Banco atualizado com sucesso!");
+      console.log("Db updated!");
     } catch (err) {
-      console.error("Nao foi possivel salvar os registros", err);
-      console.log("Terminando...")
+      console.error("Error while saving to database:", err);
+      console.log("Finishing...");
     }
   };
 }
