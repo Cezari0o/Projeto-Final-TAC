@@ -1,6 +1,7 @@
 import SaudeAPI from "../Api/saudeAPI";
 import { VacinaData } from "../../../types";
 import formatBytes from "../../util/formatBytes";
+import axios from "axios";
 
 export default class FetchWorker {
   private saudeAPIService;
@@ -12,6 +13,11 @@ export default class FetchWorker {
   private onFinishFetch;
   private servicesList;
   private initialFetchTime: Date | null = null;
+  private pingTimeoutMinutes = Number(process.env.PING_TIMEOUT) || 25;
+  private timeOutID: NodeJS.Timeout | undefined;
+  private cancelPing = false;
+
+  private finished = false;
 
   private netStatusData = {
     requestCount: 0,
@@ -21,7 +27,7 @@ export default class FetchWorker {
 
   constructor(
     servicesList: ((data: VacinaData[]) => void)[],
-    onFinishFetch: () => void
+    onFinishFetch: () => Promise<void>
   ) {
     this.saudeAPIService = new SaudeAPI();
     this.maxRetryCount = process.env.MAX_RETRY_COUNT
@@ -33,6 +39,32 @@ export default class FetchWorker {
 
     this.onFinishFetch = onFinishFetch;
     this.servicesList = servicesList;
+  }
+
+  private async finishProcess() {
+    this.cancelPing = true;
+    this.finished = true;
+    clearInterval(this.timeOutID);
+    await this.onFinishFetch();
+    return;
+  }
+
+  private keepAppAwake() {
+    this.timeOutID = setInterval(async () => {
+      if (this.cancelPing) {
+        clearInterval(this.timeOutID);
+        return;
+      }
+      console.log("\nAwaking app!");
+      try {
+        const res = await axios.get(process.env.APP_PROD_URL || "");
+        console.log("Answer:", res.data);
+      } catch (err) {
+        console.log("Giving error:", err);
+      }
+
+      console.log("\n");
+    }, this.pingTimeoutMinutes * 60 * 1000);
   }
 
   private printStatus(final = false) {
@@ -93,6 +125,27 @@ export default class FetchWorker {
 
   async fetchData() {
     if (this.startedFetch) return;
+    this.keepAppAwake();
+
+    const signalfn = async (sign: NodeJS.Signals) => {
+      if (this.finished) {
+        process.exit();
+        return;
+      }
+
+      if (sign === "SIGINT") {
+        console.log("User request to terminate...");
+      } else {
+        console.log(`Received ${sign}`);
+      }
+      console.log(`Shutting down, and saving everything...`);
+
+      await this.finishProcess();
+      process.exit();
+    };
+
+    const sigtermProcess = process.once("SIGTERM", signalfn);
+    const sigintProcess = process.once("SIGINT", signalfn);
 
     let retryCount = 0;
 
@@ -116,7 +169,7 @@ export default class FetchWorker {
 
         if (response.empty) {
           console.log("Finishing data fetch");
-          this.onFinishFetch();
+          await this.finishProcess();
           return;
         }
 
@@ -129,14 +182,16 @@ export default class FetchWorker {
         this.printStatus();
         if (this.finishedFetch()) {
           this.printStatus(true);
-          this.onFinishFetch();
+
+          await this.finishProcess();
           return;
         }
       } catch (err) {
         console.error("Error in fetching data!", err);
         retryCount++;
         if (retryCount >= this.maxRetryCount) {
-          console.error("Maximum attempts reached! Finishing incompletely...");
+          await this.finishProcess();
+          console.error("Maximum attempts reached! Saving...");
           return;
         }
         console.error("Retrying...");

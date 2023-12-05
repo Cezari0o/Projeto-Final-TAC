@@ -10,7 +10,9 @@ export default function wakeWorker() {
   const dataProcessService = new DataProcessService(dataProcessRepo);
   const worker = new FetchWorker(
     [(data) => dataProcessService.processDataCount(data)],
-    () => dataProcessService.saveToDataBase()
+    async () => {
+      await dataProcessService.saveToDataBase();
+    }
   );
 
   const wakeUpWorkerService = new WakeWorkerService(schedulerRepo, () => {

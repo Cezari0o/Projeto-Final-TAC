@@ -10,6 +10,11 @@ declare global {
       MAX_RETRY_COUNT: number;
       MAX_REQUEST_COUNT: number;
       REQUEST_SAVE_COUNT: number;
+      APP_PROD_URL: string;
+      /**
+       * Tempo em minutos
+       */
+      PING_TIMEOUT: number;
     }
   }
 }

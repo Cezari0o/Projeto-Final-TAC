@@ -38,7 +38,7 @@ export default class DataProcessService {
     });
   }
 
-  saveToDataBase() {
-    this.dataProcessRepo.saveAll();
+  async saveToDataBase() {
+    await this.dataProcessRepo.saveAll();
   }
 }

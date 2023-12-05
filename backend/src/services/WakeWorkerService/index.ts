@@ -31,7 +31,7 @@ export class WakeWorkerService {
     try {
       const nextExecution = await this.schedulerRepo.getWorkerNextExec();
 
-      nextExecution.setMinutes(nextExecution.getMinutes() + 10);
+      nextExecution.setMinutes(nextExecution.getMinutes() + 5);
       if (nextExecution < new Date()) {
         await this.wakeUp();
 
