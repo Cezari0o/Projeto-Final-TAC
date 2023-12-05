@@ -13,7 +13,6 @@ export class WakeWorkerService {
   }
 
   private async wakeUp() {
-    console.log();
     this.wakeUpMethod();
     return "Worker active";
   }
@@ -32,6 +31,7 @@ export class WakeWorkerService {
     try {
       const nextExecution = await this.schedulerRepo.getWorkerNextExec();
 
+      nextExecution.setMinutes(nextExecution.getMinutes() + 10);
       if (nextExecution < new Date()) {
         await this.wakeUp();
 
@@ -41,7 +41,7 @@ export class WakeWorkerService {
         return;
       }
 
-      const job = scheduleJob(nextExecution, this.wakeUp);
+      const job = scheduleJob(nextExecution, () => this.wakeUp());
       job.on("success", () => this.scheduleNextJob());
       done?.(null);
     } catch (err) {

@@ -1,25 +1,26 @@
-import DataChartRepo from "../../repos/dataChartRepo";
+import { DataCount } from "../../../types";
+import DataChartRepo, { CategoryGroup } from "../../repos/dataChartRepo";
 import { CategoriaCountType } from "../../repos/dataProcessRepo";
 import Callback from "../../util/callbackType";
 
 export interface ChartDataParams {
   category?: CategoriaCountType | CategoriaCountType[];
+  limit?: number;
 }
 
-export interface ChartData {}
+export type ChartData = CategoryGroup[] | DataCount[];
 
 export default class DataChartService {
   constructor(private dataChartRepo: DataChartRepo) {}
 
   async getChartData(params: ChartDataParams, done: Callback<ChartData>) {
     try {
-      if (params.category) {
-        const categorys = await this.dataChartRepo.getCategory(params.category);
+      const itens = await this.dataChartRepo.getData({
+        groupBy: params.category,
+        limit: params.limit,
+      });
 
-        for (const category of categorys) {
-          // TODO: rode pra cada categoria uma busca dos dados pra ela
-        }
-      }
+      done(null, itens);
     } catch (err) {
       done(err as Error, null);
     }

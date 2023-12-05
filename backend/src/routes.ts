@@ -19,7 +19,7 @@ router.get("/badge-status", (req, res) => {
   });
 });
 
-// router.use("/data", chartData);
+router.use("/data", chartData);
 router.use((req, res) => {
   return res
     .status(StatusCodes.NOT_FOUND)

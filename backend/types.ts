@@ -57,6 +57,38 @@ export interface Category {
   updatedAt: Date;
 }
 
+export interface DataCount {
+  /**
+   * Id da relacao
+   */
+  id: number;
+
+  /**
+   * Nome do item
+   */
+  itemName: string;
+
+  /**
+   * Quantidade do item
+   */
+  total: number;
+
+  /**
+   * Indice da categoria no qual este item esta agrupado
+   */
+  itemCategoryId: number;
+
+  /**
+   * Data de criacao
+   */
+  createdAt: Date;
+
+  /**
+   * Data de atualizacao
+   */
+  updatedAt: Date;
+}
+
 // {
 //   "_index": "desc-imunizacao-v5",
 //   "_type": "_doc",
